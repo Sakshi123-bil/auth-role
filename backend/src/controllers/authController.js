@@ -2,18 +2,28 @@ const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const register = async (req,res) =>{
-    try{
-   const {userName , passWord , role} = req.body;
-   const hashedPassword = bcrypt.hash(passWord,10);
-   const newUser = new User({userName , hashedPassword , role});
+const register = async (req, res) => {
+  try {
+    const { userName, passWord, role } = req.body;
 
-   await newUser.save();
-   res.status(201).json({message:"User is Created"})
-    }catch(e){
-        res.status(500).json({message:"something went wrong"})
+    if (!userName || !passWord || !role) {
+      return res.status(400).json({ message: "All fields are required" });
     }
-}
+
+    const hashedPassword = await bcrypt.hash(passWord, 10);
+    const newUser = new User({ userName, passWord: hashedPassword, role });
+
+    await newUser.save();
+
+    console.log("✅ User registered successfully");
+    res.status(201).json({ message: "User is Created" });
+  } catch (e) {
+    console.error("🔥 Error during registration:", e);
+    res.status(500).json({ message: "Something went wrong", error: e.message });
+  }
+};
+
+
 
 const login = async (req,res) =>{
   const {userName , passWord} = req.body;
